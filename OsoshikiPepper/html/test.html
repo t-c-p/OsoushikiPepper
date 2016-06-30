@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="utf-8" />
+	<title></title>
+<!--	<script src="/libs/qimessaging/1.0/jquery.min.js"></script>
+	<script src="/libs/qimessaging/1.0/qimessaging.js"></script> -->
+	<script src="js/jquery.min.js"></script>
+	<script src="js/qimessaging.js"></script>
+	<link rel="stylesheet" href="style.css" type="text/css">
+
+	<script src="bxslider/jquery.bxslider.min.js"></script>
+    <!-- <link href="bxslider/jquery.bxslider.css" rel="stylesheet" /> -->
+
+</head>
+<body>
+	<strong>テスト</strong><br/>
+	<ul id="imagearea" class="bxslider">
+	</ul>
+	<div id="messagearea">
+	</div>
+<script>
+(function($){
+	var $message = $('#messagearea');
+	var $imageArea = $('#imagearea');
+
+	function debug(message) {
+		$message.append(message + '<br/>');
+	}
+	// function showImage(json) {
+		var images = ["pepper_hanami.jpg", "pepper_osousiki.png"];
+		// var images = $.parseJSON(json);
+		//imagesの長さ
+		var length = images.length;
+		//imgaes全て読み込んだフラグ
+		var flag = 0;
+		$.each(images, function(i, v){
+			debug(v);
+			var $image = $('<img>');
+			$image.attr('src', v).on('load.slider', function(){
+				$imageArea.append($('<li>').append($image));
+				$image.off('load.slider');
+				flag++;
+				console.log(v, flag, length);
+				//images読み込んだら実行
+				if(flag == length){
+				    // $(document).ready(function(){
+			    	    $('.bxslider').bxSlider({
+			    	    	auto: true
+			    	    });
+			    	// });
+				}
+			});
+		});
+	// }
+
+})(jQuery);
+</script>
+</body>
+</html>

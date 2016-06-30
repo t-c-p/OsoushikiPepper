@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="utf-8" />
+	<title></title>
+	<script src="/libs/qimessaging/1.0/jquery.min.js"></script>
+	<script src="/libs/qimessaging/1.0/qimessaging.js"></script>
+	<script src="js/jquery.min.js"></script>
+	<script src="js/qimessaging.js"></script> 
+	<link rel="stylesheet" href="style.css" type="text/css">
+
+	<script src="bxslider/jquery.bxslider.min.js"></script>
+    <!-- <link href="bxslider/jquery.bxslider.css" rel="stylesheet" /> -->
+
+</head>
+<body>
+	<div id="loader"><img src="images/loading.svg" height="400" width="400" alt="Loading..."></div>
+	<div id="fade"></div>
+		
+	<div id="container">
+		<!-- <strong>テスト</strong><br/> -->
+		<ul id="imagearea" class="bxslider"></ul>
+		<p class="bgm">music: "Piano Sentiment 2" by Cory Gray (http://www.needledrop.co/wp/artists/cory-gray/)</p>
+		<div id="messagearea">
+		</div>
+	</div>
+<script>
+
+(function($){
+	//loadingアニメーション
+	$('head').append(
+		'<style type="text/css">#container { display: none; } #fade, #loader { display: block; }</style>'
+	);
+
+	var $message = $('#messagearea');
+	var $imageArea = $('#imagearea');
+
+	// function debug(message) {
+	// 	$message.append(message + '<br/>');
+	// }
+	// debug('jQuery:OK');
+
+	// pepperとSocketをつなぐ
+	var pepper = {};
+	pepper.qi = new QiSession();
+	pepper.qi.socket().on('connect', function(){
+		// debug('pepper:connect');
+	}).on('disconnect', function(){
+		// debug('pepper:disconnect');
+	});
+
+	pepper.qi.service("ALMemory").done(function(als){
+		// debug('ALMemory : OK');
+
+		// イベント登録をする
+		als.subscriber('Funeral/Inner/ImageUrls').done(function(sub){
+			sub.signal.connect(function(data){
+				// debug('connect : ' + data);
+				showImage(data);
+			});
+			// debug('ALMemory : Funeral/Inner/ImageUrls : OK ');
+		}).fail(function(err){
+			// debug('ALMemory : Funeral/Inner/ImageUrls : NG :' + err);
+		});
+	}).fail(function(err){
+		debug('ALMemory : NG :' + err);
+	});
+
+	function showImage(json) {
+		var images = $.parseJSON(json);
+		//imgaes全て読み込んだフラグ
+		var flag = 0;
+		if(images.length == 0){
+			$imageArea.append('<li><img src="images/pepper_goodbye.png"></li>');
+			//loadingアニメーションおわり
+			var pageH = $("#container").height();
+			$("#fade").css("height", pageH).delay(900).fadeOut(800);
+			$("#loader").delay(600).fadeOut(300);
+			$("#container").css("display", "block");
+			//スライドショー
+			$('.bxslider').bxSlider({
+	    		auto: true
+	      	});
+		}
+		$.each(images, function(i, v){
+			// debug(v);
+			var $image = $('<img>');
+			$image.attr('src', v).on('load.slider', function(){
+				$imageArea.append($('<li>').append($image));
+				$image.off('load.slider');
+				flag++;
+				console.log(v, flag, images.length);
+				//images読み込んだら実行
+				if(flag == images.length){
+					//loadingアニメーションおわり
+					var pageH = $("#container").height();
+					$("#fade").css("height", pageH).delay(900).fadeOut(800);
+					$("#loader").delay(600).fadeOut(300);
+					$("#container").css("display", "block");
+					//スライドショー
+			    	$('.bxslider').bxSlider({
+			    		auto: true
+			      	});		
+				}
+			});
+		});
+	}
+})(jQuery);
+</script>
+</body>
+</html>
